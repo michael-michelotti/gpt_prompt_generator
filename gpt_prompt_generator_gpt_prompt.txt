@@ -5,9 +5,14 @@ The entry point to my project is called main.py. Here is the full text
 # module, explaining the module
 
 import pathlib
+import re
 
 # General steps:
 # Initialization - create write buffer, write project overview to write buffer
+# Establish ignore list
+with open("prompt_ignore") as fid:
+    ignore_list = [entry.strip() for entry in fid.readlines()]
+
 project_root_dir = pathlib.Path.cwd()
 out_file_path = pathlib.Path(f"{project_root_dir.name}_gpt_prompt.txt")
 out_buff = open(out_file_path, "w")
@@ -19,11 +24,20 @@ out_buff.write(f"The entry point to my project is called {entry_point_file.name}
 with open(entry_point_file) as fid:
     out_buff.write(fid.read())
 
-# Begin iteration over all files and directories
+# Find all files at root level, remove with filter criteria
+file_list = []
 for file in project_root_dir.iterdir():
-    if file.name == entry_point_file.name or file.name == out_file_path.name or file.name == ".git":
+    for ignore_string in ignore_list:
+        if re.search(ignore_string, file.name):
+            continue
+    # Filter out files or directories that should be ignored
+    if file.name == entry_point_file.name or file.name == out_file_path.name:
         continue
 
+    file_list.append(file)
+
+# Begin iteration over all files and directories
+for file in file_list:
     # If the file is a directory, enter directory and begin recursively iterating
     if file.is_dir():
         out_buff.write(f"My project has a directory called {file.name}.\n")
@@ -31,6 +45,7 @@ for file in project_root_dir.iterdir():
             out_buff.write(f"That directory has a file called {file.name} with the following text:\n")
             with open(f2) as f2id:
                 out_buff.write(f2id.read())
+        continue
 
     # Write file context to write buffer
     out_buff.write(f"My project has a file called {file.name} with the following text:\n")
@@ -43,10 +58,34 @@ for file in project_root_dir.iterdir():
 # Cleanup (write closing context, close file)
 out_buff.write("Try to convince me that this script could be improved, and provide examples.\n")
 out_buff.close()
+My project has a directory called test.
+That directory has a file called test with the following text:
+"""test module with a docstring"""
+
+
+def l1_module_fn(c, d):
+    return c + d
+That directory has a file called test with the following text:
+"""test module with a docstring"""
+
+
+def l1_module_fn(c, d):
+    return c + d
 My project has a file called base_level_module.py with the following text:
 """Base level module with some docstring text"""
 
 
 def base_level_fn(a: int, b: int):
     return a + b
-Try to convince me that this script could be improved, and provide examples.
+My project has a file called .gitignore with the following text:
+gpt_prompt*.txt
+My project has a directory called .git.
+That directory has a file called .git with the following text:
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+That directory has a file called .git with the following text:
