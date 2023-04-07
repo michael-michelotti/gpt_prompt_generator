@@ -19,7 +19,8 @@ with open(entry_point_file) as fid:
 
 # Begin iteration over all files and directories
 for file in project_root_dir.iterdir():
-    if file.name == entry_point_file.name or file.name == out_file_path.name:
+    # Filter out files or directories that should be ignored
+    if file.name == entry_point_file.name or file.name == out_file_path.name or file.name == ".git":
         continue
 
     # If the file is a directory, enter directory and begin recursively iterating

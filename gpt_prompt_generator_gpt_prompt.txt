@@ -21,8 +21,16 @@ with open(entry_point_file) as fid:
 
 # Begin iteration over all files and directories
 for file in project_root_dir.iterdir():
-    if file.name == entry_point_file.name or file.name == out_file_path.name:
+    if file.name == entry_point_file.name or file.name == out_file_path.name or file.name == ".git":
         continue
+
+    # If the file is a directory, enter directory and begin recursively iterating
+    if file.is_dir():
+        out_buff.write(f"My project has a directory called {file.name}.\n")
+        for f2 in file.iterdir():
+            out_buff.write(f"That directory has a file called {file.name} with the following text:\n")
+            with open(f2) as f2id:
+                out_buff.write(f2id.read())
 
     # Write file context to write buffer
     out_buff.write(f"My project has a file called {file.name} with the following text:\n")
