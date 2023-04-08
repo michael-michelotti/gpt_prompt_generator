@@ -1,2 +1,9 @@
 .git
 .gitignore
+.idea
+.metadata
+.settings
+Debug
+.cproject
+.project
+.*launch

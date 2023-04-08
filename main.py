@@ -5,16 +5,18 @@
 import pathlib
 import re
 import os
+from tkinter.filedialog import askdirectory
 
-LOG_MODE = "print"
+LOG_MODE = "file"
 
 # General steps:
 # Initialization - create write buffer, write project overview to write buffer
 # Establish ignore list
 with open("prompt_ignore") as fid:
-    ignore_list = [entry.strip() for entry in fid.readlines()]
+    ignore_list = [rf"{entry.strip()}" for entry in fid.readlines()]
 
-project_root_dir = pathlib.Path.cwd()
+fname = askdirectory(title="Please select a project directory to create a prompt for")
+project_root_dir = pathlib.Path(fname)
 out_file_path = pathlib.Path(f"{project_root_dir.name}_gpt_prompt.txt")
 out_buff = open(out_file_path, "w")
 
@@ -36,7 +38,7 @@ def filter_file_list(file_iter, ignore_list):
     match_flag = False
     file_list = []
 
-    for file in project_root_dir.iterdir():
+    for file in file_iter:
         for ignore_string in ignore_list:
             if re.search(ignore_string, file.name):
                 match_flag = True
@@ -56,24 +58,18 @@ def process_directory(dir_root):
     entry_list = filter_file_list(dir_root.iterdir(), ignore_list)
     for entry in entry_list:
         if entry.is_file():
-            print_fn(f"File found: {entry.name}")
+            print_fn(f"That package has the following file: {entry.name}, with the following text:\n")
+            with open(entry) as entry_handle:
+                out_buff.write(entry_handle.read())
         elif entry.is_dir():
-            print_fn(f"==== Directory Found: {entry.name} ======")
+            print_fn(f"My project has a package called {entry.name}.\n")
             process_directory(entry)
 
-
 process_directory(project_root_dir)
-
-
-# Write file context to write buffer
-# print_fn(f"My project has a file called {file.name} with the following text:\n")
-# with open(file) as fid:
-#     out_buff.write(fid.read())
 
 # Write intermediate buffer to final buffer
 # Right now, only buffer is the output file
 
 # Cleanup (write closing context, close file)
-print_fn("Try to convince me that this script could be improved, and provide examples.")
-# out_buff.write("Try to convince me that this script could be improved, and provide examples.\n")
+print_fn("Try to convince me that this script could be improved, and provide examples.\n")
 out_buff.close()
